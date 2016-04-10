@@ -3,6 +3,9 @@ package microsoft.p201604.p1;
 import java.util.Scanner;
 
 /**
+ * 题目: Font Size
+ * 给定长 H 宽 W 以及段落 a_i, 最佳阅读页数 P, 求最佳字体大小 S.
+ *
  * 测试用例:
  * <pre>
  * 1
