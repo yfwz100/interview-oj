@@ -1,9 +1,11 @@
-package huawei.p6;
+package huawei.newcoder.p5;
 
 import java.math.BigInteger;
 import java.util.Scanner;
 
 /**
+ * 题目: 十六进制转十进制.
+ *
  * Created by yfwz100 on 16/4/1.
  */
 public class Main {

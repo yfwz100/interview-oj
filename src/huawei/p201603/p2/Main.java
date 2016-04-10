@@ -1,10 +1,11 @@
-package huawei.p1;
+package huawei.p201603.p2;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Scanner;
 
 /**
+ * 题目: 取石子游戏(斐波那契数列博弈)
+ *
  * 1堆石子有n个,两人轮流取.先取者第1次可以取任意多个，但不能全部取完.以后每次取的石子数不能超过上次取子数的2倍。取完者胜.
  * 先取者负输出"Second win".先取者胜输出"First win".
  *

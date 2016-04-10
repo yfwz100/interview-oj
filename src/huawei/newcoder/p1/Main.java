@@ -1,4 +1,4 @@
-package huawei.p3;
+package huawei.newcoder.p1;
 
 import java.util.*;
 

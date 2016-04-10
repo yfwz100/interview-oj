@@ -1,4 +1,4 @@
-package huawei.p5;
+package huawei.newcoder.p4;
 
 import java.util.Scanner;
 
