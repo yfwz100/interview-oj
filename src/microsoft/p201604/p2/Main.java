@@ -1,64 +1,103 @@
 package microsoft.p201604.p2;
 
-import java.util.LinkedList;
-import java.util.List;
+
 import java.util.Scanner;
 
 /**
- * 路由表
+ * 题目: 路由表防火墙
  * <p>
  * Created by yfwz100 on 16/4/6.
  */
 public class Main {
 
-    private static class IPRule {
-        boolean allowed;
-        String prefix;
+    interface IPRuleModel {
+        /**
+         * Add rule to the model.
+         *
+         * @param method a string of "allow" or "deny", else ignored.
+         * @param ip the IP address.
+         */
+        void addRule(String method, String ip);
 
-        IPRule(boolean allowed, String prefix) {
-            this.allowed = allowed;
-            this.prefix = prefix;
+        /**
+         * Check if the given IP is allowed.
+         *
+         * @param ip the IP to checked.
+         * @return true if allowed.
+         */
+        boolean isAllowed(String ip);
+    }
+
+    private static class TrieIPRuleModel implements IPRuleModel {
+
+        private static final int LEFT = 0, RIGHT = 1;
+
+        private static class TrieNode {
+            enum State {
+                ALLOW, DENY, DEFAULT
+            }
+
+            State state = State.DEFAULT;
+            TrieNode[] next = new TrieNode[2];
+
+            TrieNode() {
+            }
         }
 
-        static IPRule parseLine(String line) {
-            String[] tokens = line.split("[\\s\\/]");
-            boolean allowed = false;
-            if (tokens[0].equals("allow")) {
-                allowed = true;
-            }
-            String prefix = ipBin(tokens[1]);
-            if (tokens.length > 2) {
-                prefix = prefix.substring(0, Integer.parseInt(tokens[2]));
-            }
-            return new IPRule(allowed, prefix);
-        }
+        TrieNode root = new TrieNode();
 
-        public boolean match(String ip) {
-            return ip.startsWith(prefix);
+        @Override
+        public void addRule(String method, String ip) {
+            boolean allowed = "allow".equals(method);
+            String[] rulePart = ip.split("/");
+            int mask = 32;
+            if (rulePart.length > 1) {
+                mask = Integer.parseInt(rulePart[1]);
+                ip = rulePart[0];
+            }
+            int addr = 0;
+            for (String part : ip.split("\\.")) {
+                int p = Integer.parseInt(part);
+                addr = (addr << 8) + p;
+            }
+            TrieNode current = root;
+            for (int i = 0; i < mask; i++) {
+                if (current.state != TrieNode.State.DEFAULT) {
+                    return;
+                }
+                int t = (addr >> (31 - i)) & 1;
+                if (current.next[t] == null) {
+                    current.next[t] = new TrieNode();
+                }
+                current = current.next[t];
+            }
+            // 如果之前没有这项规则
+            if (current.state == TrieNode.State.DEFAULT) {
+                current.state = allowed ? TrieNode.State.ALLOW : TrieNode.State.DENY;
+            }
         }
 
         @Override
-        public String toString() {
-            return (allowed ? "allow" : "deny") + " " + prefix;
-        }
-    }
-
-    private static String ipBin(String ip) {
-        String prefix = "";
-        String[] parts = ip.split("\\.");
-        for (String part : parts) {
-            String bin = Integer.toBinaryString(Integer.parseInt(part));
-//            System.out.println(bin);
-            if (bin.length() < 8) {
-                int size = 8 - bin.length();
-                for (int i = 0; i < size; i++) {
-                    bin = "0" + bin;
-                }
+        public boolean isAllowed(String ip) {
+            boolean allowed = true;
+            TrieNode current = root;
+            int addr = 0;
+            for (String part : ip.split("\\.")) {
+                int p = Integer.parseInt(part);
+                addr = (addr << 8) + p;
             }
-//                System.out.println(bin + " " + bin.length());
-            prefix += bin;
+            for (int i = 0; i < 32; i++) {
+                if (current.state != TrieNode.State.DEFAULT) {
+                    allowed = (current.state != TrieNode.State.DENY);
+                }
+                int t = (addr >> (31 - i)) & 1;
+                if (current.next[t] == null) {
+                    break;
+                }
+                current = current.next[t];
+            }
+            return allowed;
         }
-        return prefix;
     }
 
     public static void main(String... args) {
@@ -66,26 +105,12 @@ public class Main {
         while (sc.hasNextInt()) {
             int N = sc.nextInt();
             int M = sc.nextInt();
-            sc.nextLine();
-//            sc.nextLine();
-            List<IPRule> rules = new LinkedList<>();
+            IPRuleModel model = new TrieIPRuleModel();
             for (int i = 0; i < N; i++) {
-                rules.add(IPRule.parseLine(sc.nextLine()));
-//                System.out.println(rules.get(rules.size() - 1).prefix);
+                model.addRule(sc.next(), sc.next());
             }
-            ip:
             for (int i = 0; i < M; i++) {
-                String ip = ipBin(sc.nextLine());
-                for (IPRule rule : rules) {
-                    if (rule.match(ip)) {
-                        System.out.println(rule.allowed ? "YES" : "NO");
-//                        System.out.println(rule.prefix);
-//                        System.out.println(ip);
-//                        System.out.println(ip.startsWith(rule.prefix));
-                        continue ip;
-                    }
-                }
-                System.out.println("YES");
+                System.out.println(model.isAllowed(sc.next()) ? "YES" : "NO");
             }
 
         }
