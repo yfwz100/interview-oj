@@ -67,9 +67,10 @@ public class Main {
             if (c[i] == 1) {
                 if (!first) {
                     System.out.print(',');
+                } else {
+                    first = false;
                 }
                 System.out.print(x[i]);
-                first = false;
             }
         }
     }
